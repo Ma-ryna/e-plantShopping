@@ -1,4 +1,3 @@
-import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { removeItem, updateQuantity } from './CartSlice';
 import './CartItem.css';
@@ -8,65 +7,47 @@ const CartItem = ({ onContinueShopping }) => {
   const dispatch = useDispatch();
 
   // Calculate total amount for all products in the cart
- const parseItemCostToInteger = (itemCost) => {
-        /*
-            Remove currency symbol before multiplication.
-            Otherwise, NaN returned.
-            Improve in future: Use regex to remove all possible currency symbols?
-        */
-        return parseInt(itemCost.replace('$', ''), 10);
-    };
+  const calculateTotalAmount = () => {
+    return cart.reduce((total, item) => {
+      return total + (parseFloat(item.cost.replace('$', '')) * item.quantity);
+    }, 0).toFixed(2);
+  };
 
-    // Calculate total amount for all products in the cart
-    const calculateTotalAmount = () => {
-        let totalCost = 0;
+  const handleContinueShopping = (e) => {
+    e.preventDefault();
+    onContinueShopping(e);
+  };
 
-        cart.forEach((item) => {
-            const itemCost = parseItemCostToInteger(item.cost);
-            totalCost += itemCost * item.quantity;
-        });
+  const handleCheckoutShopping = () => {
+    alert('Functionality to be added for future reference');
+  };
 
-        return totalCost;
-    };
+  const handleIncrement = (item) => {
+    dispatch(updateQuantity({
+      name: item.name,
+      quantity: item.quantity + 1
+    }));
+  };
 
-    const handleContinueShopping = (e) => {
-        onContinueShopping(e);
-    };
+  const handleDecrement = (item) => {
+    if (item.quantity > 1) {
+      dispatch(updateQuantity({
+        name: item.name,
+        quantity: item.quantity - 1
+      }));
+    } else {
+      dispatch(removeItem(item.name));
+    }
+  };
 
-    const handleCheckoutShopping = (e) => {
-        alert('Functionality to be added for future reference');
-    };
+  const handleRemove = (item) => {
+    dispatch(removeItem(item.name));
+  };
 
-    const handleIncrement = (item) => {
-        const updatedItem = { ...item };
-        updatedItem.quantity++;
-        dispatch(updateQuantity(updatedItem));
-    };
-
-    const handleDecrement = (item) => {
-        const updatedItem = { ...item };
-
-        if (updatedItem.quantity == 1) {
-            // Remove item if number of items gets decremented to 0
-            dispatch(removeItem(updatedItem));
-        } else {
-            updatedItem.quantity--;
-            dispatch(updateQuantity(updatedItem));
-        }
-    };
-
-    const handleRemove = (item) => {
-        dispatch(removeItem(item));
-    };
-
-    // Calculate total cost based on quantity for an item
-    const calculateTotalCost = (item) => {
-        let totalCost = 0;
-        const itemCost = parseItemCostToInteger(item.cost);
-        totalCost = item.quantity * itemCost;
-
-        return totalCost;
-    };
+  // Calculate total cost based on quantity for an item
+  const calculateTotalCost = (item) => {
+    return (parseFloat(item.cost.replace('$', '')) * item.quantity).toFixed(2);
+  };
 
   return (
     <div className="cart-container">
@@ -93,12 +74,11 @@ const CartItem = ({ onContinueShopping }) => {
       <div className="continue_shopping_btn">
         <button className="get-started-button" onClick={(e) => handleContinueShopping(e)}>Continue Shopping</button>
         <br />
-        <button className="get-started-button1">Checkout</button>
+        <button className="get-started-button1" onClick={handleCheckoutShopping}>Checkout</button>
       </div>
     </div>
   );
 };
 
 export default CartItem;
-
 
